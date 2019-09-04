@@ -160,4 +160,101 @@ function ReactNativeWebPlayer(md) {
   };
 }
 
-module.exports = {ReactNativeWebPlayer, SnackPlayer};
+function getComponentPropsHeader(componentName) {
+  const component = require('./components/' + componentName);
+  const propsKeys = Object.getOwnPropertyNames(component.props || {}) || [];
+  return (
+    '### Props\n\n' +
+    propsKeys
+      .map(prop => {
+        return (
+          '- [`' +
+          prop +
+          '`](' +
+          componentName.toLowerCase() +
+          '#' +
+          prop.toLowerCase() +
+          ')'
+        );
+      })
+      .join('\n') +
+    '\n\n'
+  );
+}
+
+const tableHeaderText = `| Type | Required |
+| ---- | -------- |
+`;
+
+const tableHeaderWithPlatformText = `| Type | Required | Platform |
+| ---- | -------- | -------- |
+`;
+
+function getComponentPropBody(prop, data) {
+  const headerText = `### \`${prop}\`\n\n`;
+  const {description, platform, required} = data;
+  const tableHeader = platform ? tableHeaderWithPlatformText : tableHeaderText;
+  const typeCell = `| ${data.flowType.name} | ${required ? 'Yes' : 'No'} |`;
+  const platformCell = (platform && ` ${platform} |`) || '';
+  return (
+    headerText +
+    description +
+    '\n\n' +
+    tableHeader +
+    typeCell +
+    platformCell +
+    '\n\n'
+  );
+}
+
+function getComponentPropsBody(componentName) {
+  const component = require('./components/' + componentName);
+  const propsKeys = Object.getOwnPropertyNames(component.props || {}) || [];
+  return (
+    '## Props\n\n' +
+    propsKeys
+      .map(prop => {
+        const data = component.props[prop];
+        return getComponentPropBody(prop, data);
+      })
+      .join('\n---\n') +
+    '\n\n'
+  );
+}
+
+function GeneratePropsHeader(md) {
+  md.renderer.rules.fence_custom.GeneratePropsHeader = function(
+    tokens,
+    idx,
+    options,
+    env,
+    self
+  ) {
+    const render = md.render;
+    let params = parseParams(cleanParams(tokens[idx].params));
+    const component = params.component;
+    return render.call(md, getComponentPropsHeader(component), options);
+  };
+}
+
+function GeneratePropsBody(md) {
+  md.renderer.rules.fence_custom.GeneratePropsBody = function(
+    tokens,
+    idx,
+    options,
+    env,
+    self
+  ) {
+    const render = md.render;
+    const params = parseParams(cleanParams(tokens[idx].params));
+    const component = params.component;
+    return render.call(md, getComponentPropsBody(component), options);
+  };
+}
+
+module.exports = {
+  ReactNativeWebPlayer,
+  SnackPlayer,
+  GeneratePropsBody,
+  GeneratePropsHeader,
+};

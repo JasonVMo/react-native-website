@@ -68,6 +68,8 @@ const siteConfig = {
   markdownPlugins: [
     RemarkablePlugins.SnackPlayer,
     RemarkablePlugins.ReactNativeWebPlayer,
+    RemarkablePlugins.GeneratePropsHeader,
+    RemarkablePlugins.GeneratePropsBody,
   ],
   usePrism: ['javascript', 'js', 'jsx', 'java', 'objective-c', 'json'],
   highlight: {
